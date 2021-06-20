@@ -1,3 +1,8 @@
+# Custom ignored files and folders
+.secrets
+.exp
+.DS_Store
+
 # Logs
 logs
 *.log

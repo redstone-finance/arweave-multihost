@@ -1,0 +1,15 @@
+{
+  "name": "arweave-multihost",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/redstone-finance/arweave-multihost",
+  "author": "hatskier <suvorovalex1997@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "arweave": "^1.10.14",
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "@types/node": "^15.12.4"
+  }
+}
