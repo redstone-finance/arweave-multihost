@@ -1,6 +1,6 @@
 {
   "name": "arweave-multihost",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "JavaScript/TypeScript Arweave SDK with multiple host support",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
