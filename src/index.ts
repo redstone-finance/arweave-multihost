@@ -119,4 +119,4 @@ function init(
   return arweave;
 }
 
-export default { init };
+export = { init };
