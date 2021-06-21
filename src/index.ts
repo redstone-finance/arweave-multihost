@@ -15,11 +15,10 @@ interface AdditionalArweaveConfig {
 
 const defaultArweaveConfig: AdditionalArweaveConfig = {
   timeout: 10000,
-  logging: true,
-  logger: console.log,
+  logging: false,
 };
 
-function getMultihostArweaveClient(
+function init(
   hosts: HostConfig[],
   config: AdditionalArweaveConfig = defaultArweaveConfig) {
     if (hosts.length === 0) {
@@ -120,4 +119,4 @@ function getMultihostArweaveClient(
   return arweave;
 }
 
-export default getMultihostArweaveClient;
+export default { init };

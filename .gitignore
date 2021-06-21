@@ -2,6 +2,7 @@
 .secrets
 .exp
 .DS_Store
+lib
 
 # Logs
 logs

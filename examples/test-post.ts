@@ -1,4 +1,6 @@
-import initArweave from "../src/index";
+// IMPORTANT: to run this example you should place JWK key file in the .secrets folder
+
+import ArweaveMultihost from "../src";
 import jwk from "../.secrets/jwk.json";
 
 main();
@@ -12,21 +14,6 @@ async function main(): Promise<void> {
       protocol: "http",
       port: 80,
     },
-    // {
-    //   host: "127.0.0.2",
-    //   protocol: "http",
-    //   port: 80,
-    // },
-    // {
-    //   host: "127.0.0.3",
-    //   protocol: "https",
-    //   port: 443,
-    // },
-    // {
-    //   host: "arweave.dev",
-    //   protocol: "https",
-    //   port: 443,
-    // },
     {
       host: "arweave.net",
       protocol: "https",
@@ -34,8 +21,14 @@ async function main(): Promise<void> {
     },
   ];
 
-  const arweave = initArweave(hosts);
-  const arweave2 = initArweave(hosts);
+  const config = {
+    timeout: 10000,
+    logging: true,
+    logger: console.log,
+  };
+
+  const arweave = ArweaveMultihost.init(hosts, config);
+  const arweave2 = ArweaveMultihost.init(hosts, config);
 
   console.log("--------------------------------------------------------------------");
   console.log("Creating and signing a test transaction");
