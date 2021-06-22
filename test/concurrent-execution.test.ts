@@ -1,5 +1,10 @@
 import ArweaveMultihost from "../src";
 
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Mocking axios
 const requestedUrls: string[] = [];
 jest.mock("axios", () => {
@@ -8,6 +13,10 @@ jest.mock("axios", () => {
       get: jest.fn().mockImplementation(async (path) => {
         const url = `${config.baseURL}/${path}`;
         requestedUrls.push(url);
+
+        if (path === "info") {
+          await sleep(1000);
+        }
 
         if (config.baseURL.includes("bad")) {
           throw new Error("Bad url");
@@ -23,8 +32,8 @@ jest.mock("axios", () => {
   }
 });
 
-describe("Testing arweave multihost client", () => {
-  test("Should initialize arweave multihost and get network info", async () => {
+describe("Testing concurrent request sending", () => {
+  test("Should correctly execute concurrent requests", async () => {
     // Given
     const arweave = ArweaveMultihost.init([
       {
@@ -48,19 +57,22 @@ describe("Testing arweave multihost client", () => {
         port: 443,
       },
     ], {
-      timeout: 3000,
+      timeout: 10000,
       logging: true,
       logger: console.log,
-      onError: console.log,
     });
     
     // When
-    await arweave.network.getInfo();
+    const infoPromise = arweave.network.getInfo();
+    const peersPromise = arweave.network.getPeers();
+    await Promise.all([infoPromise, peersPromise]);
 
     // Then
     expect(requestedUrls).toEqual([
       "https://bad-host-1:443/info",
-      "https://bad-host-2:443/info",
+      "https://bad-host-1:443/peers",
+      "https://bad-host-2:443/peers",
+      "https://good-host-1:443/peers",
       "https://good-host-1:443/info",
     ]);
   });

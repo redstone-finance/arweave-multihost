@@ -22,7 +22,7 @@ const defaultArweaveConfig: AdditionalArweaveConfig = {
 
 function init(
   hosts: HostConfig[],
-  config: AdditionalArweaveConfig = defaultArweaveConfig) {
+  config: AdditionalArweaveConfig = defaultArweaveConfig): Arweave {
     if (hosts.length === 0) {
       throw new Error("Multihost config should have at least one host");
     }
@@ -32,7 +32,7 @@ function init(
       ...config,
     });
 
-    let currentHostIndex = 0, errorCounter = 0;
+    let currentHostIndex = 0, lastFailedHost = 0;
 
     function updateHostParams(hostConfig: HostConfig) {
       arweave.api.config.host = hostConfig.host;
@@ -46,7 +46,7 @@ function init(
     };
 
     function switchHost() {
-      const oldHost = hosts[currentHostIndex];
+      const oldHost = getCurrentHost();
       currentHostIndex = (currentHostIndex + 1) % hosts.length;
       const newHost = hosts[currentHostIndex];
       if (config.logging && config.logger !== undefined) {
@@ -58,18 +58,35 @@ function init(
       updateHostParams(newHost);
     }
 
+    function getCurrentHost() {
+      return hosts[currentHostIndex];
+    }
+
+    function isHostActive(host: HostConfig) {
+      const currentHost = getCurrentHost();
+      return JSON.stringify(host) === JSON.stringify(currentHost);
+    }
+
     async function overridenRequestMethod(sendOriginalRequest: any) {
       for (let i = 0; i < hosts.length; i++) {
+        const hostUsedForRequest = getCurrentHost();
         try {
           const response = await sendOriginalRequest();
           return response;
         } catch (err) {
+          // config.onError callback may be used for error logging
+          if (config.onError) {
+            config.onError(err);
+          }
+
           if (i === hosts.length - 1) {
             throw err;
           } else {
-            switchHost();
-            if (config.onError) {
-              config.onError(err);
+            // We switch host only if it's still active.
+            // If it's not active it means that it was switched by
+            // another concurrent request
+            if (isHostActive(hostUsedForRequest)) {
+              switchHost();
             }
           }
         }
