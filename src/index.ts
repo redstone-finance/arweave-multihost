@@ -14,12 +14,37 @@ interface AdditionalArweaveConfig {
   onError?: (...arg: any) => any;
 };
 
+const DEFAULT_HOSTS = [
+  {
+    host: "arweave.net",
+    protocol: "https",
+    port: 443,
+  },
+  {
+    host: "gateway.amplify.host",
+    protocol: "https",
+    port: 443,
+  },
+  {
+    host: "arweave.dev",
+    protocol: "https",
+    port: 443,
+  },
+];
+
 const defaultArweaveConfig: AdditionalArweaveConfig = {
   timeout: 10000,
   logging: false,
   onError: console.error,
 };
 
+/**
+   * Returns overrriden arweave instance
+   * @param hosts - Array of hosts
+   * @param config - Other configuration options
+   * (timeout, logging, logger, onError callback)
+   * @returns arweave instance
+   */
 function init(
   hosts: HostConfig[],
   config: AdditionalArweaveConfig = defaultArweaveConfig): Arweave {
@@ -112,4 +137,18 @@ function init(
   return arweave;
 }
 
-export = { init };
+/**
+   * Returns overrriden arweave instance with default hosts
+   * (arweave.net, gateway.amplify.host, arweave.dev)
+   * @param config - Other configuration options
+   * (timeout, logging, logger, onError callback)
+   * @returns arweave instance
+   */
+function initWithDefaultHosts(config: AdditionalArweaveConfig): Arweave {
+  return init(DEFAULT_HOSTS, config);
+}
+
+export = {
+  init,
+  initWithDefaultHosts,
+};

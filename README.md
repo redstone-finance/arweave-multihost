@@ -31,8 +31,10 @@ import ArweaveMultihost from "arweave-multihost";
 ```
 
 ### 2. Initialisation
-```js
 
+#### Init with custom hosts
+
+```js
 const arweave = ArweaveMultihost.init(
   // Hosts
   [
@@ -57,6 +59,18 @@ const arweave = ArweaveMultihost.init(
     logger: console.log,    // Logger function
     onError: console.error, // On request error callback
   });
+```
+
+#### Init with the default hosts
+You can also use `arweave.initWithDefaultHosts(config)` method to initialise Arweave instance with the default hosts array (aweave.net, gateway.amplify.host, arweave.dev)
+```js
+
+const arweave = ArweaveMultihost.initWithDefaultHosts({
+  timeout: 10000,         // Network request timeouts in milliseconds
+  logging: true,          // Enable network request logging
+  logger: console.log,    // Logger function
+  onError: console.error, // On request error callback
+});
 ```
 
 ### 3. Usage
