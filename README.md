@@ -16,7 +16,7 @@ npm install arweave-multihost
 
 ### Using yarn
 ```bash
-yarn add arweave-multihostredstone-api
+yarn add arweave-multihost
 ```
 
 ## 💡 Usage
