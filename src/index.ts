@@ -97,6 +97,11 @@ function init(
         const hostUsedForRequest = getCurrentHost();
         try {
           const response = await sendOriginalRequest();
+          if (response.status >= 500 && response.status < 600) {
+            throw new Error("Error while sending http request: "
+              + `Status: ${response.status}. `
+              + `Data: ${JSON.stringify(response.data)}`);
+          }
           return response;
         } catch (err) {
           // config.onError callback may be used for error logging
