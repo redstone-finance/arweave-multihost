@@ -47,7 +47,8 @@ const defaultArweaveConfig: AdditionalArweaveConfig = {
    */
 function init(
   hosts: HostConfig[],
-  config: AdditionalArweaveConfig = defaultArweaveConfig): Arweave {
+  config: AdditionalArweaveConfig = defaultArweaveConfig,
+  useCache: boolean = false): Arweave {
     if (hosts.length === 0) {
       throw new Error("Multihost config should have at least one host");
     }
@@ -57,7 +58,9 @@ function init(
       ...config,
     });
 
-    let currentHostIndex = 0, lastFailedHost = 0;
+    let currentHostIndex = 0;
+
+    const cache: {[key: string]: any} = {};
 
     function updateHostParams(hostConfig: HostConfig) {
       arweave.api.config.host = hostConfig.host;
@@ -74,13 +77,16 @@ function init(
       const oldHost = getCurrentHost();
       currentHostIndex = (currentHostIndex + 1) % hosts.length;
       const newHost = hosts[currentHostIndex];
-      if (config.logging && config.logger !== undefined) {
-        config.logger(
-          "Request failed. Switching host and retrying. "
-          + `Old host: ${JSON.stringify(oldHost)}. `
-          + `New host: ${JSON.stringify(newHost)}.`)
-      }
+      log("Request failed. Switching host and retrying. "
+        + `Old host: ${JSON.stringify(oldHost)}. `
+        + `New host: ${JSON.stringify(newHost)}.`);
       updateHostParams(newHost);
+    }
+
+    function log(message: string) {
+      if (config.logging && config.logger !== undefined) {
+        config.logger(message);
+      }
     }
 
     function getCurrentHost() {
@@ -92,7 +98,7 @@ function init(
       return JSON.stringify(host) === JSON.stringify(currentHost);
     }
 
-    async function overridenRequestMethod(sendOriginalRequest: any) {
+    async function overriddenRequestMethod(sendOriginalRequest: any) {
       for (let i = 0; i < hosts.length; i++) {
         const hostUsedForRequest = getCurrentHost();
         try {
@@ -127,15 +133,24 @@ function init(
     arweave.api.get = async (
       endpoint: string,
       axiosConfig?: AxiosRequestConfig) => {
-        return await overridenRequestMethod(
+        if (cache[endpoint]) {
+          log(`Returning result from cache for ${endpoint}`);
+          return cache[endpoint];
+        }
+        const result = await overriddenRequestMethod(
           () => originalApiRequestMethods.get(endpoint, axiosConfig));
+        if (useCache) {
+          cache[endpoint] = result;
+        }
+
+        return result;
       }
 
     arweave.api.post = async (
       endpoint: string,
       body: Buffer | string | object,
       axiosConfig?: AxiosRequestConfig) => {
-        return await overridenRequestMethod(
+        return await overriddenRequestMethod(
           () => originalApiRequestMethods.post(endpoint, body, axiosConfig));
       }
 
@@ -149,8 +164,8 @@ function init(
    * (timeout, logging, logger, onError callback)
    * @returns arweave instance
    */
-function initWithDefaultHosts(config: AdditionalArweaveConfig): Arweave {
-  return init(DEFAULT_HOSTS, config);
+function initWithDefaultHosts(config: AdditionalArweaveConfig, useCache: boolean = false): Arweave {
+  return init(DEFAULT_HOSTS, config, useCache);
 }
 
 export = {
